@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Table, Row, Col, Icon, Divider } from 'antd';
+import { Form, Input, Button, Table } from 'antd';
 const {ipcRenderer} = window.require('electron')
 const FormItem = Form.Item;
 const columns = [{
     title: '#',
     dataIndex: 'key',
     key: 'key',
-    render: text => <a href="#">{text}</a>,
+    render: text => <a href="">{text}</a>,
   }, {
     title: '材料',
     dataIndex: 'material_name',
@@ -27,7 +27,7 @@ const columns = [{
     title: '操作',
     key: 'action',
     render: (text, record) => (
-      <a href="#">删除</a>
+      <a href="">删除</a>
     ),
 }];
 const data = [{
@@ -38,7 +38,7 @@ function hasErrors(fieldsError) {
   return Object.keys(fieldsError).some(field => fieldsError[field]);
 }
 
-class OrderForm extends React.Component {
+class OrderForm extends Component {
   constructor() {
     super();
     this.state = {
@@ -47,7 +47,7 @@ class OrderForm extends React.Component {
   
   today=()=>{
     let d=new Date(); 
-    return d.getFullYear()+'-'+((m=d.getMonth()+1+'')=>(m.length==1?'0'+m:m))()+'-'+d.getDate()
+    return d.getFullYear()+'-'+((m=d.getMonth()+1+'')=>(m.length===1?'0'+m:m))()+'-'+d.getDate()
   }
 
   handleSubmit = (e) => {
@@ -59,15 +59,12 @@ class OrderForm extends React.Component {
     });
   }
   render() {
-    const { getFieldDecorator, getFieldsError, getFieldError, isFieldTouched } = this.props.form;
+    const { getFieldDecorator, getFieldsError } = this.props.form;
     const formItemLayout = {
       labelCol: { span: 4 },
       wrapperCol: { span: 14 },
     };
 
-    // Only show error after a field is touched.
-    const userNameError = isFieldTouched('userName') && getFieldError('userName');
-    const passwordError = isFieldTouched('password') && getFieldError('password');
     return (
       <Form layout='horizontal' onSubmit={this.handleSubmit}>
         <FormItem {...formItemLayout} label="产品">
@@ -92,18 +89,7 @@ class OrderForm extends React.Component {
             initialValue:''
           })(<Input />)}
         </FormItem>
-        <table>
-          <thead>
-            <tr>
-              <th>#</th><th>材料</th><th>描述</th><th>单位用量</th><th>总用量</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td></td>
-            </tr>
-          </tbody>
-        </table>
+        <Table {...{pagination:false}} dataSource={data} columns={columns} />
         <FormItem {...{wrapperCol:{span: 16,offset: 4}}} style={{ textAlign: 'left' }}>
           <Button type="primary" htmlType="submit" disabled={hasErrors(getFieldsError())}>确定</Button>
           <Button type="default" style={{ marginLeft: 8 }}>取消</Button>

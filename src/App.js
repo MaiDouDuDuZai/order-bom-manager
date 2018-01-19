@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Table, Row, Col, Icon, Divider } from 'antd';
+import { Form, Input, Button, Table, Row, Col, Icon } from 'antd';
 import OrderForm from './OrderForm';
 import './App.css';
 const {ipcRenderer} = window.require('electron')
@@ -21,31 +21,60 @@ const columns = [{
   key: 'note',
 }];
 
-ipcRenderer.send('r-order', '')
-ipcRenderer.on('r-order', function(event, args){
-  console.log(args)
-})
-
-const dataSource = [{
-  key: '1',
-  name: '胡彦斌',
-  age: 32,
-  address: '西湖区湖底公园1号'
-}, {
-  key: '2',
-  name: '胡彦祖',
-  age: 42,
-  address: '西湖区湖底公园1号'
-}];
-
 class App extends Component {
+  state={
+    data:[],
+    pagination: {},
+    loading: false
+  };
+
+  handleTableChange = (pagination, filters, sorter) => {
+    const pager = { ...this.state.pagination };
+    pager.current = pagination.current;
+    this.setState({
+      pagination: pager
+    });
+    this.fetch({
+      results: pagination.pageSize,
+      page: pagination.current,
+      sortField: sorter.field,
+      sortOrder: sorter.order,
+      ...filters,
+    });
+  }
+
+  fetch = (params = {}) => {
+    console.log('params:', params);
+    this.setState({ loading: true });
+    ipcRenderer.send('r-order', {
+      results: 10,
+      ...params
+    });
+    ipcRenderer.once('r-order', (event, data)=>{
+      console.log(this)
+      const pagination = { ...this.state.pagination };
+      // Read total count from server
+      // pagination.total = data.totalCount;
+      pagination.total = 200;
+      this.setState({
+        loading: false,
+        data: data,
+        pagination,
+      });
+    })
+  }
+
+  componentDidMount() {
+    this.fetch();
+  }
+  
   render() {
     return (
       <div className="App">
         <header>
           <input type='text'/> <input type='submit' /> <button>新增</button>
         </header>
-        <Table {...{pagination:false}} dataSource={dataSource} columns={columns} />
+        <Table dataSource={this.state.data} loading={this.state.loading} onChange={this.handleTableChange} columns={columns} />
         <OrderForm />
       </div>
     );
