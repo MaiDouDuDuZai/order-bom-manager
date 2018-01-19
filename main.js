@@ -68,7 +68,7 @@ app.on('activate', function () {
 
 const Datastore = require('nedb');
 const userData = app.getAppPath('userData').replace('/app.asar', '');
-const ds={
+const db={
   order: new Datastore({ filename: userData+'/db/order.db', autoload: true }),
   bom: new Datastore({ filename: userData+'/db/bom.db', autoload: true }),
   material: new Datastore({ filename: userData+'/db/material.db', autoload: true }),
@@ -76,10 +76,15 @@ const ds={
 };
 /* IPC's */
 ipcMain.on('c-order', function (event, arg) {
-   
+  db.order.insert(JSON.parse(arg), function (err, newDoc) {});
 });
 ipcMain.on('r-order', function (event, arg) {
-   
+   if(arg!=''){
+
+   }
+   db.order.find({}, function (err, docs) {
+     ipcMain.send('r-order',docs)
+   });
 });
 ipcMain.on('u-order', function (event, arg) {
    
@@ -99,3 +104,48 @@ ipcMain.on('r-material', function (event, arg) {
 ipcMain.on('r-product', function (event, arg) {
    
 });
+/*
+db.product.insert({ 
+  name: '023-007-0240',
+  name: 'PC5R6-28V4'
+}, function (err, newDoc) {});
+db.material.insert([{ 
+    name: 'W-3000-0531',
+    desc: 'Hardener',
+    unit:'kg'
+  },{
+    name:'A-1201-0094',
+    desc:'BRN-RED',
+    unit:'st'
+  }
+], function (err, newDoc) {});
+db.bom.insert([{
+    product_name:'023-007-0240',
+    material_name:'W-3000-0531',
+    qty:1
+  },{
+    product_name:'023-007-0240',
+    material_name:'A-1201-0094',
+    qty:2
+  },{
+    product_name:'PC5R6-28V4',
+    material_name:'A-1201-0094',
+    qty:66
+}], function (err, newDoc) {})
+db.order.insert([{
+    product_name:'023-007-0240',
+    qty:500,
+    date:'2018-01-01',
+    note:'2333'
+  },{
+    product_name:'023-007-0240',
+    qty:200,
+    date:'2018-04-04',
+    note:'666'
+  },{
+    product_name:'PC5R6-28V4',
+    qty:1000,
+    date:'2018-06-01',
+    note:''
+}], function (err, newDoc) {})
+*/

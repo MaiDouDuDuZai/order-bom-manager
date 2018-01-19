@@ -1,6 +1,42 @@
 import React, { Component } from 'react';
+import { Form, Input, Button, Table, Row, Col, Icon, Divider } from 'antd';
 import OrderForm from './OrderForm';
 import './App.css';
+const {ipcRenderer} = window.require('electron')
+const columns = [{
+  title: '产品',
+  dataIndex: 'product_name',
+  key: 'product_name',
+}, {
+  title: '数量',
+  dataIndex: 'qty',
+  key: 'qty',
+}, {
+  title: '日期',
+  dataIndex: 'date',
+  key: 'date',
+}, {
+  title: '备注',
+  dataIndex: 'note',
+  key: 'note',
+}];
+
+ipcRenderer.send('r-order', '')
+ipcRenderer.on('r-order', function(event, args){
+  console.log(args)
+})
+
+const dataSource = [{
+  key: '1',
+  name: '胡彦斌',
+  age: 32,
+  address: '西湖区湖底公园1号'
+}, {
+  key: '2',
+  name: '胡彦祖',
+  age: 42,
+  address: '西湖区湖底公园1号'
+}];
 
 class App extends Component {
   render() {
@@ -9,38 +45,7 @@ class App extends Component {
         <header>
           <input type='text'/> <input type='submit' /> <button>新增</button>
         </header>
-        <table>
-          <thead>
-            <tr>
-              <th>#</th><th>产品</th><th>数量</th><th>日期</th><th>备注</th><th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-            
-            </tr>
-          </tbody>
-        </table>
-        <from>
-          <input type="text" placeholder="产品" />
-          <input type="number" placeholder="数量" />
-          <input type="date" placeholder="日期" />
-          <input type="text" placeholder="备注" />
-          BOM
-          <table>
-            <thead>
-              <tr>
-                <th>#</th><th>材料</th><th>描述</th><th>用量</th><th>采购数</th><th>单位</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-
-              </tr>
-            </tbody>
-          </table>
-          <input type="submit"/>
-        </from>
+        <Table {...{pagination:false}} dataSource={dataSource} columns={columns} />
         <OrderForm />
       </div>
     );
