@@ -1,5 +1,6 @@
 {
   "name": "order-bom-manager",
+  "productName": "order-bom-manager",
   "version": "0.1.0",
   "private": true,
   "main": "main.js",

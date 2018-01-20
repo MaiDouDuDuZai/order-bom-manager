@@ -79,12 +79,23 @@ ipcMain.on('c-order', function (event, arg) {
   db.order.insert(JSON.parse(arg), function (err, newDoc) {});
 });
 ipcMain.on('r-order', function (event, arg) {
-   if(arg!=''){
-
-   }
-   db.order.find({}, function (err, docs) {
-     event.sender.send('r-order', docs)
-   });
+  let results=arg.results||10;
+  let page=arg.page||1;
+  let sortObj={};
+  sortObj[arg.sortField||'_id']=(arg.sortOrder&&{descend:-1, ascend:1}[arg.sortOrder])||1;
+  let findObj={};
+  if(arg.product_name){
+    findObj.product_name={ $regex: new RegExp(arg.product_name,'i')}
+  }
+  
+  db.order.count({}, function (err, count) {
+    db.order.find(findObj).sort(sortObj).skip((page-1)*results).limit(results).exec(function (err, docs) {
+      event.sender.send('r-order', {
+        list:docs, 
+        total:count
+      })
+    });
+  });
 });
 ipcMain.on('u-order', function (event, arg) {
    
