@@ -5,25 +5,6 @@ import './App.css';
 const {ipcRenderer} = window.require('electron')
 const { Header, Footer, Content } = Layout;
 const Search = Input.Search;
-const columns = [{
-  title: '产品',
-  dataIndex: 'product_name',
-  key: 'product_name',
-  sorter: true,
-}, {
-  title: '数量',
-  dataIndex: 'qty',
-  key: 'qty',
-}, {
-  title: '日期',
-  dataIndex: 'date',
-  key: 'date',
-  sorter: true,
-}, {
-  title: '备注',
-  dataIndex: 'note',
-  key: 'note',
-}];
 
 class App extends Component {
   constructor(props) {
@@ -34,12 +15,33 @@ class App extends Component {
       loading: false,
       remoteFilter:{}
     };
-  }
-
-  remoteSearch = (value)=>{
-    if(value){
-      this.handleTableChange({},{},{})
-    }
+    this.columns = [{
+      title: '产品',
+      dataIndex: 'product_name',
+      key: 'product_name',
+      sorter: true,
+    }, {
+      title: '数量',
+      dataIndex: 'qty',
+      key: 'qty',
+    }, {
+      title: '日期',
+      dataIndex: 'date',
+      key: 'date',
+      sorter: true,
+    }, {
+      title: '备注',
+      dataIndex: 'note',
+      key: 'note',
+    }, {
+      title: '操作',
+      key: '操作',
+      render: (text, record) => {
+        <Popconfirm title="Sure to delete?" onConfirm={() => this.onDelete(record._id)}>
+          <a href="#">Delete</a>
+        </Popconfirm>
+      },
+    }];
   }
 
   handleTableChange = (pagination, filters, sorter) => {
@@ -77,6 +79,13 @@ class App extends Component {
     })
   }
 
+  onDelete=(id)=>{
+    ipcRenderer.send('d-order', id);
+    ipcRenderer.once('d-order', (event, args)=>{
+      console.log(args)
+    })
+  }
+
   componentDidMount() {
     this.fetch();
   }
@@ -90,12 +99,12 @@ class App extends Component {
               <Button type="primary">新增</Button>
             </Col>
             <Col span={8} offset={14}>
-              <Search placeholder="产品" onChange={event=>this.setState({remoteFilter:{product_name:event.target.value}})} onSearch={this.remoteSearch} enterButton />
+              <Search placeholder="产品" onChange={event=>this.setState({remoteFilter:{product_name:event.target.value}})} onSearch={()=>this.handleTableChange({},{},{})} enterButton />
             </Col>
           </Row>
         </Header>
         <Content>
-          <Table dataSource={this.state.data} pagination={this.state.pagination} loading={this.state.loading} onChange={this.handleTableChange} columns={columns} rowKey='_id' />
+          <Table dataSource={this.state.data} pagination={this.state.pagination} loading={this.state.loading} onChange={this.handleTableChange} columns={this.columns} rowKey='_id' />
           <OrderForm />
         </Content>
       </div>

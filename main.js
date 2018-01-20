@@ -84,9 +84,10 @@ ipcMain.on('r-order', function (event, arg) {
   let sortObj={};
   sortObj[arg.sortField||'_id']=(arg.sortOrder&&{descend:-1, ascend:1}[arg.sortOrder])||1;
   let findObj={};
-  if(arg.product_name){
-    findObj.product_name={ $regex: new RegExp(arg.product_name,'i')}
+  if(!arg.product_name){
+    arg.product_name='';
   }
+  findObj.product_name={ $regex: new RegExp(arg.product_name,'i')}
   
   db.order.count({}, function (err, count) {
     db.order.find(findObj).sort(sortObj).skip((page-1)*results).limit(results).exec(function (err, docs) {
@@ -101,7 +102,10 @@ ipcMain.on('u-order', function (event, arg) {
    
 });
 ipcMain.on('d-order', function (event, arg) {
-   
+  console.log(arg)
+  // db.order.remove({ _id: arg }, {}, function (err, numRemoved) {
+    // numRemoved = 1
+  // });
 });
 ipcMain.on('r-bom', function (event, arg) {
    
