@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Table } from 'antd';
+import { Form, Input, InputNumber, DatePicker, Button, Table, AutoComplete } from 'antd';
+import moment from 'moment';
+import 'moment/locale/zh-cn';
+moment.locale('zh-cn');
 const {ipcRenderer} = window.require('electron')
 const FormItem = Form.Item;
 const columns = [{
@@ -39,9 +42,10 @@ function hasErrors(fieldsError) {
 }
 
 class OrderForm extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
+      autoCompleteDataSource: ['Burns Bay Road', 'Downing Street', 'Wall Street'],
     };
   }
   
@@ -54,16 +58,25 @@ class OrderForm extends Component {
     e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
+        ipcRenderer.once('c-order', (event, args)=>{
+          if(args.isSuccess){
+            console.log('b')
+            this.props.onCreated()
+          }
+        })
+        console.log(this.props.form.getFieldsValue())
         ipcRenderer.send('c-order', JSON.stringify(this.props.form.getFieldsValue()))
       }
     });
   }
+
   render() {
     const { getFieldDecorator, getFieldsError } = this.props.form;
     const formItemLayout = {
       labelCol: { span: 4 },
-      wrapperCol: { span: 14 },
+      wrapperCol: { span: 16 },
     };
+    const dateFormat='YYYY-MM-DD';
 
     return (
       <Form layout='horizontal' onSubmit={this.handleSubmit}>
@@ -72,24 +85,30 @@ class OrderForm extends Component {
             rules: [{
               required: true, message: '产品名必须!',
             }],
-          })(<Input />)}
+          })(<AutoComplete
+            dataSource={this.state.autoCompleteDataSource}
+            placeholder="产品名"
+            filterOption={(inputValue, option) => option.props.children.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1}
+          />)}
         </FormItem>
         <FormItem {...formItemLayout} label="数量">
           {getFieldDecorator('qty', {
             initialValue:0
-          })(<Input type="number" />)}
+          })(<InputNumber style={{width:'100%'}} />)}
         </FormItem>
         <FormItem {...formItemLayout} label="日期">
           {getFieldDecorator('date', {
-            initialValue:this.today()
-          })(<Input type="date" />)}
+            initialValue:moment(this.today(), dateFormat)
+          })(<DatePicker style={{width:'100%'}} format={dateFormat} />)}
         </FormItem>
         <FormItem {...formItemLayout} label="备注">
           {getFieldDecorator('note', {
             initialValue:''
           })(<Input />)}
         </FormItem>
-        <Table {...{pagination:false}} dataSource={data} columns={columns} />
+        <FormItem {...formItemLayout} label="BOM">
+          <Table {...{pagination:false}} dataSource={data} columns={columns} />
+        </FormItem>
         <FormItem {...{wrapperCol:{span: 16,offset: 4}}} style={{ textAlign: 'left' }}>
           <Button type="primary" htmlType="submit" disabled={hasErrors(getFieldsError())}>确定</Button>
           <Button type="default" style={{ marginLeft: 8 }}>取消</Button>

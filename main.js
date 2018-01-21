@@ -76,8 +76,19 @@ const db={
 };
 /* IPC's */
 ipcMain.on('c-order', function (event, arg) {
-  db.order.insert(JSON.parse(arg), function (err, newDoc) {});
+  arg=JSON.parse(arg);
+  db.order.insert(arg, function (err, newDoc) {});
+  db.product.count({name: arg.product_name}, function(err,count){
+    if(count==0){
+      db.product.insert({name:arg.product_name}, function(err,newDoc){
+        if(!err){
+          event.sender.send('c-order', {isSuccess:true})
+        }
+      })
+    }
+  })
 });
+
 ipcMain.on('r-order', function (event, arg) {
   let results=arg.results||10;
   let page=arg.page||1;
@@ -98,24 +109,30 @@ ipcMain.on('r-order', function (event, arg) {
     });
   });
 });
+
 ipcMain.on('u-order', function (event, arg) {
    
 });
+
 ipcMain.on('d-order', function (event, arg) {
   console.log(arg)
-  // db.order.remove({ _id: arg }, {}, function (err, numRemoved) {
-    // numRemoved = 1
-  // });
+  db.order.remove({ _id: arg }, {}, function (err, numRemoved) {
+    event.sender.send('d-order', numRemoved)
+  });
 });
+
 ipcMain.on('r-bom', function (event, arg) {
    
 });
+
 ipcMain.on('d-bom', function (event, arg) {
    
 });
+
 ipcMain.on('r-material', function (event, arg) {
    
 });
+
 ipcMain.on('r-product', function (event, arg) {
    
 });

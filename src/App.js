@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { Layout, Form, Input, Button, Table, Row, Col, Icon } from 'antd';
+import { Layout, Input, Button, Table, Row, Col, Popconfirm } from 'antd';
 import OrderForm from './OrderForm';
 import './App.css';
 const {ipcRenderer} = window.require('electron')
-const { Header, Footer, Content } = Layout;
+const { Header, Content } = Layout;
 const Search = Input.Search;
 
 class App extends Component {
@@ -16,6 +16,10 @@ class App extends Component {
       remoteFilter:{}
     };
     this.columns = [{
+      title: '#',
+      dataIndex: 'index',
+      key: 'index'
+    },{
       title: '产品',
       dataIndex: 'product_name',
       key: 'product_name',
@@ -29,6 +33,11 @@ class App extends Component {
       dataIndex: 'date',
       key: 'date',
       sorter: true,
+      render: (text)=>{
+        return (
+          text.split('T')[0]
+        )
+      }
     }, {
       title: '备注',
       dataIndex: 'note',
@@ -37,9 +46,11 @@ class App extends Component {
       title: '操作',
       key: '操作',
       render: (text, record) => {
-        <Popconfirm title="Sure to delete?" onConfirm={() => this.onDelete(record._id)}>
-          <a href="#">Delete</a>
-        </Popconfirm>
+        return (
+          <Popconfirm title="确定删除?" okText="确定" cancelText="取消" onConfirm={() => this.onDelete(record._id)}>
+            <a href="#">删除</a>
+          </Popconfirm>
+        )
       },
     }];
   }
@@ -63,27 +74,32 @@ class App extends Component {
   fetch = (params = {}) => {
     console.log('params:', params);
     this.setState({ loading: true });
-    ipcRenderer.send('r-order', {
-      results: 10,
-      ...params
-    });
     ipcRenderer.once('r-order', (event, args)=>{
       const pagination = { ...this.state.pagination };
       // Read total count from server
       pagination.total = args.total;
       this.setState({
         loading: false,
-        data: args.list,
+        data: args.list.map((item,index)=>Object.assign(item,{index:index+1})),
         pagination,
       });
     })
+    ipcRenderer.send('r-order', {
+      results: 10,
+      ...params
+    });
   }
 
   onDelete=(id)=>{
-    ipcRenderer.send('d-order', id);
     ipcRenderer.once('d-order', (event, args)=>{
-      console.log(args)
+      const data = [...this.state.data];
+      this.setState({ data: data.filter(item => item._id !== id) });
     })
+    ipcRenderer.send('d-order', id);
+  }
+
+  onCreated=()=>{
+    console.log(11111)
   }
 
   componentDidMount() {
@@ -99,13 +115,13 @@ class App extends Component {
               <Button type="primary">新增</Button>
             </Col>
             <Col span={8} offset={14}>
-              <Search placeholder="产品" onChange={event=>this.setState({remoteFilter:{product_name:event.target.value}})} onSearch={()=>this.handleTableChange({},{},{})} enterButton />
+              <Search placeholder="产品名" onChange={event=>this.setState({remoteFilter:{product_name:event.target.value}})} onSearch={()=>this.handleTableChange({},{},{})} enterButton />
             </Col>
           </Row>
         </Header>
         <Content>
           <Table dataSource={this.state.data} pagination={this.state.pagination} loading={this.state.loading} onChange={this.handleTableChange} columns={this.columns} rowKey='_id' />
-          <OrderForm />
+          <OrderForm onCreated={this.onCreated.bind(this)} />
         </Content>
       </div>
     );
