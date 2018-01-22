@@ -75,15 +75,17 @@ const db={
   product: new Datastore({ filename: userData+'/db/product.db', autoload: true })
 };
 /* IPC's */
+//order
 ipcMain.on('c-order', function (event, arg) {
   arg=JSON.parse(arg);
-  db.order.insert(arg, function (err, newDoc) {});
+  db.order.insert(arg, function (err, newDoc) {
+    if(!err){
+      event.sender.send('c-order', {isSuccess:true})
+    }
+  });
   db.product.count({name: arg.product_name}, function(err,count){
     if(count==0){
       db.product.insert({name:arg.product_name}, function(err,newDoc){
-        if(!err){
-          event.sender.send('c-order', {isSuccess:true})
-        }
       })
     }
   })
@@ -121,7 +123,28 @@ ipcMain.on('d-order', function (event, arg) {
   });
 });
 
+//bom
 ipcMain.on('r-bom', function (event, arg) {
+   db.bom.find(arg, function(err, docs){
+      if(docs.length){
+        let material_names=docs.map((item)=>item.material_name);
+        db.material.find({name:{$in: material_names}}, function(err, material_docs){
+          let material={};
+          for(let i in material_docs){
+            material[material_docs[i]['name']]={desc:material_docs[i]['desc'], unit:material_docs[i]['unit']}
+          }
+          for(let i in docs){
+            Object.assign(docs[i], material[docs[i].material_name], {index:parseInt(i)+1})
+          }
+          event.sender.send('r-bom', docs)
+        })
+      }else{
+        event.sender.send('r-bom', docs)
+      }
+   })
+});
+
+ipcMain.on('u-bom', function (event, arg) {
    
 });
 
@@ -129,10 +152,18 @@ ipcMain.on('d-bom', function (event, arg) {
    
 });
 
+//material
 ipcMain.on('r-material', function (event, arg) {
    
 });
 
+//product
 ipcMain.on('r-product', function (event, arg) {
-   
+  if(!arg){
+    arg='.*'
+  }
+  db.product.find({name:{$regex: new RegExp(arg,'i')}}, {name:1}).limit(15).exec(function (err, docs) {
+    docs=docs.map((item)=>item.name)
+    event.sender.send('r-product', docs)
+  })
 });

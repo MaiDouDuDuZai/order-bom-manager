@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Layout, Input, Button, Table, Row, Col, Popconfirm } from 'antd';
 import OrderForm from './OrderForm';
 import './App.css';
+import moment from 'moment';
 const {ipcRenderer} = window.require('electron')
 const { Header, Content } = Layout;
 const Search = Input.Search;
@@ -35,7 +36,7 @@ class App extends Component {
       sorter: true,
       render: (text)=>{
         return (
-          text.split('T')[0]
+          moment(text).utcOffset(480).format('YYYY-MM-DD')
         )
       }
     }, {
@@ -48,7 +49,7 @@ class App extends Component {
       render: (text, record) => {
         return (
           <Popconfirm title="确定删除?" okText="确定" cancelText="取消" onConfirm={() => this.onDelete(record._id)}>
-            <a href="#">删除</a>
+            <a>删除</a>
           </Popconfirm>
         )
       },
@@ -98,10 +99,6 @@ class App extends Component {
     ipcRenderer.send('d-order', id);
   }
 
-  onCreated=()=>{
-    console.log(11111)
-  }
-
   componentDidMount() {
     this.fetch();
   }
@@ -121,7 +118,7 @@ class App extends Component {
         </Header>
         <Content>
           <Table dataSource={this.state.data} pagination={this.state.pagination} loading={this.state.loading} onChange={this.handleTableChange} columns={this.columns} rowKey='_id' />
-          <OrderForm onCreated={this.onCreated.bind(this)} />
+          <OrderForm onCreated={()=>this.handleTableChange({},{},{})} />
         </Content>
       </div>
     );
