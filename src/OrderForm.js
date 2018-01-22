@@ -25,14 +25,13 @@ class OrderForm extends Component {
     this.state = {
       autoCompleteData: [],
       bomData: [],
-      product_name:''
+      product_name:'',
     };
     this.columns = [{
       title: '#',
       dataIndex: 'index',
       key: 'index',
       width:'5%',
-      render: text => <a href="">{text}</a>,
     }, {
       title: '材料',
       dataIndex: 'material_name',
@@ -55,6 +54,7 @@ class OrderForm extends Component {
       dataIndex: 'qty_total',
       width:'15%',
       key: 'qty_total',
+      render:(text, record) => <a onClick={(e)=>e.preventDefault()}>{record.qty*this.props.form.getFieldValue('qty')}</a>
     }, {
       title: '单位',
       dataIndex: 'unit',
@@ -86,7 +86,7 @@ class OrderForm extends Component {
         );
       },
     }];
-    this.cacheData = this.state.bomData.map(item => ({ ...item }));
+    this.cacheBomData = []
   }
 
   componentDidMount() {
@@ -112,7 +112,7 @@ class OrderForm extends Component {
       if(column==='material_name'){
         //材料名验证
         let isDulplicate=false;
-        let savedData=newData.filter(item=>!(new RegExp('fakeid').test(item._id)))
+        let savedData=newData.filter(item=>!item.editable);
         for(let i in savedData){
           if(new RegExp(savedData[i]['material_name'],'i').test(value)){
             isDulplicate=true;
@@ -139,7 +139,9 @@ class OrderForm extends Component {
     if (target) {
       delete target.editable;
       this.setState({ data: newData });
-      this.cacheData = newData.map(item => ({ ...item }));
+      this.cacheBomData = newData.map(item => ({ ...item }));
+      //发给后台,补充到material数据库
+      ipcRenderer.send('c-material', target)
     }
   }
 
@@ -147,7 +149,7 @@ class OrderForm extends Component {
     const newData = [...this.state.bomData];
     const target = newData.filter(item => key === item._id)[0];
     if (target) {
-      Object.assign(target, this.cacheData.filter(item => key === item._id)[0]);
+      Object.assign(target, this.cacheBomData.filter(item => key === item._id)[0]);
       delete target.editable;
       this.setState({ data: newData });
     }
@@ -174,7 +176,9 @@ class OrderForm extends Component {
     if(v){
       //查询对应的bom表
       ipcRenderer.once('r-bom', (event, docs)=>{
-        this.setState({bomData:docs.map((item)=>Object.assign(item,{isDulplicate:false}))})
+        docs=docs.map((item)=>Object.assign(item,{isDulplicate:false}))
+        this.setState({bomData:docs})
+        this.cacheBomData=docs.map(item => ({ ...item }))
       })
       ipcRenderer.send('r-bom', {product_name:v})
     }

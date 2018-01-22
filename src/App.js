@@ -112,7 +112,7 @@ class App extends Component {
               <Button type="primary">新增</Button>
             </Col>
             <Col span={8} offset={14}>
-              <Search placeholder="产品名" onChange={event=>this.setState({remoteFilter:{product_name:event.target.value}})} onSearch={()=>this.handleTableChange({},{},{})} enterButton />
+              <Search placeholder="产品名" onChange={event=>this.setState({remoteFilter:{product_name:event.target.value}})} onSearch={()=>this.handleTableChange({},{},{})} />
             </Col>
           </Row>
         </Header>

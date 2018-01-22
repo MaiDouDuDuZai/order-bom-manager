@@ -153,6 +153,15 @@ ipcMain.on('d-bom', function (event, arg) {
 });
 
 //material
+ipcMain.on('c-material', function (event, arg) {
+   //name desc unit
+   db.material.insert({
+     name: arg.material_name,
+     desc: arg.desc,
+     unit: arg.unit
+   } , function(err, newDoc){})
+});
+
 ipcMain.on('r-material', function (event, arg) {
    
 });
