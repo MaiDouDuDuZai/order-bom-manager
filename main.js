@@ -117,7 +117,6 @@ ipcMain.on('u-order', function (event, arg) {
 });
 
 ipcMain.on('d-order', function (event, arg) {
-  console.log(arg)
   db.order.remove({ _id: arg }, {}, function (err, numRemoved) {
     event.sender.send('d-order', numRemoved)
   });
@@ -145,7 +144,12 @@ ipcMain.on('r-bom', function (event, arg) {
 });
 
 ipcMain.on('u-bom', function (event, arg) {
-   
+  //先清空
+  db.bom.remove({product_name:arg.product_name},{multi:true},function (err, numRemoved) {
+  });
+  //再插入
+  db.bom.insert(arg.list, function (err, newDoc) {
+  })
 });
 
 ipcMain.on('d-bom', function (event, arg) {
@@ -154,16 +158,27 @@ ipcMain.on('d-bom', function (event, arg) {
 
 //material
 ipcMain.on('c-material', function (event, arg) {
-   //name desc unit
-   db.material.insert({
-     name: arg.material_name,
-     desc: arg.desc,
-     unit: arg.unit
-   } , function(err, newDoc){})
 });
 
 ipcMain.on('r-material', function (event, arg) {
-   
+  arg=arg?arg:'.*';
+  db.material.find({name:{ $regex: new RegExp(arg,'i')}}).limit(15).exec(function(err, docs){
+    event.sender.send('r-material',docs)
+  })
+});
+
+ipcMain.on('u-material', function (event, arg) {
+  //name desc unit
+  db.material.update({
+      name:arg.material_name
+    },{
+      name: arg.material_name,
+      desc: arg.desc,
+      unit: arg.unit
+    },{
+      upsert: true
+    },function(err, numReplaced, upsert){
+    })
 });
 
 //product

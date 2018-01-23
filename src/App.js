@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Layout, Input, Button, Table, Row, Col, Popconfirm } from 'antd';
+import { Layout, Input, Button, Table, Row, Col, Popconfirm, Modal, Divider } from 'antd';
 import OrderForm from './OrderForm';
 import './App.css';
 import moment from 'moment';
@@ -14,7 +14,9 @@ class App extends Component {
       data:[],
       pagination: {},
       loading: false,
-      remoteFilter:{}
+      remoteFilter:{},
+      visible: false,
+      confirmLoading: false,
     };
     this.columns = [{
       title: '#',
@@ -48,9 +50,13 @@ class App extends Component {
       key: '操作',
       render: (text, record) => {
         return (
-          <Popconfirm title="确定删除?" okText="确定" cancelText="取消" onConfirm={() => this.onDelete(record._id)}>
-            <a>删除</a>
-          </Popconfirm>
+          <span>
+            <a>编辑</a>
+            <Divider type='vertical' />
+            <Popconfirm title="确定删除?" okText="确定" cancelText="取消" onConfirm={() => this.onDelete(record._id)}>
+              <a>删除</a>
+            </Popconfirm>
+          </span>
         )
       },
     }];
@@ -102,14 +108,38 @@ class App extends Component {
   componentDidMount() {
     this.fetch();
   }
-  
+
+  showModal = () => {
+    this.setState({
+      visible: true,
+    });
+  }
+  handleModalOk = (e) => {
+    this.setState({
+      confirmLoading: true,
+    });
+  }
+  handleModalCancel = (e) => {
+    this.setState({
+      visible: false,
+      confirmLoading: false,
+    });
+  }
+  onNewOrderCreated = () => {
+    this.setState({
+      visible: false,
+      confirmLoading:false
+    });
+    this.handleTableChange({},{},{})
+  }
+
   render() {
     return (
       <div className="App">
         <Header>
           <Row>
             <Col span={2}>
-              <Button type="primary">新增</Button>
+              <Button type="primary" onClick={this.showModal}>新增</Button>
             </Col>
             <Col span={8} offset={14}>
               <Search placeholder="产品名" onChange={event=>this.setState({remoteFilter:{product_name:event.target.value}})} onSearch={()=>this.handleTableChange({},{},{})} />
@@ -118,7 +148,21 @@ class App extends Component {
         </Header>
         <Content>
           <Table dataSource={this.state.data} pagination={this.state.pagination} loading={this.state.loading} onChange={this.handleTableChange} columns={this.columns} rowKey='_id' />
-          <OrderForm onCreated={()=>this.handleTableChange({},{},{})} />
+          <Modal
+            title="新增订单"
+            okText="确定"
+            cancelText="取消"
+            visible={this.state.visible}
+            onOk={this.handleModalOk}
+            onCancel={this.handleModalCancel}
+            confirmLoading={this.state.confirmLoading}
+          >
+            <OrderForm
+              onNewOrderCreated={this.onNewOrderCreated} 
+              confirmLoading={this.state.confirmLoading} 
+              onValidateFailed={()=>this.setState({confirmLoading:false})} 
+            />
+          </Modal>
         </Content>
       </div>
     );
