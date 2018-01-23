@@ -113,7 +113,12 @@ ipcMain.on('r-order', function (event, arg) {
 });
 
 ipcMain.on('u-order', function (event, arg) {
-   
+  arg=JSON.parse(arg);
+  db.order.update({_id:arg._id}, arg, function (err, numReplaced) {
+    if(!err){
+      event.sender.send('u-order', {isSuccess:true})
+    }
+  });
 });
 
 ipcMain.on('d-order', function (event, arg) {

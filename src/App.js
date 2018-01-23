@@ -17,6 +17,7 @@ class App extends Component {
       remoteFilter:{},
       visible: false,
       confirmLoading: false,
+      curOrder:{}
     };
     this.columns = [{
       title: '#',
@@ -51,7 +52,7 @@ class App extends Component {
       render: (text, record) => {
         return (
           <span>
-            <a>编辑</a>
+            <a onClick={()=>this.showModal(record)}>编辑</a>
             <Divider type='vertical' />
             <Popconfirm title="确定删除?" okText="确定" cancelText="取消" onConfirm={() => this.onDelete(record._id)}>
               <a>删除</a>
@@ -108,10 +109,11 @@ class App extends Component {
   componentDidMount() {
     this.fetch();
   }
-
-  showModal = () => {
+  
+  showModal = (curOrder={product_name:''}) => {
     this.setState({
       visible: true,
+      curOrder:curOrder
     });
   }
   handleModalOk = (e) => {
@@ -139,7 +141,7 @@ class App extends Component {
         <Header>
           <Row>
             <Col span={2}>
-              <Button type="primary" onClick={this.showModal}>新增</Button>
+              <Button type="primary" onClick={()=>this.showModal()}>新增</Button>
             </Col>
             <Col span={8} offset={14}>
               <Search placeholder="产品名" onChange={event=>this.setState({remoteFilter:{product_name:event.target.value}})} onSearch={()=>this.handleTableChange({},{},{})} />
@@ -149,7 +151,7 @@ class App extends Component {
         <Content>
           <Table dataSource={this.state.data} pagination={this.state.pagination} loading={this.state.loading} onChange={this.handleTableChange} columns={this.columns} rowKey='_id' />
           <Modal
-            title="新增订单"
+            title={(this.state.curOrder.product_name?'编辑':'新增')+"订单"}
             okText="确定"
             cancelText="取消"
             visible={this.state.visible}
@@ -158,9 +160,10 @@ class App extends Component {
             confirmLoading={this.state.confirmLoading}
           >
             <OrderForm
-              onNewOrderCreated={this.onNewOrderCreated} 
+              onProcessOrderOver={this.onNewOrderCreated} 
               confirmLoading={this.state.confirmLoading} 
               onValidateFailed={()=>this.setState({confirmLoading:false})} 
+              order={this.state.curOrder}
             />
           </Modal>
         </Content>

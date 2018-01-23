@@ -1,15 +1,11 @@
 import React, { Component } from 'react';
-import { Form, Input, InputNumber, DatePicker, Button, AutoComplete } from 'antd';
+import { Form, Input, InputNumber, DatePicker, AutoComplete } from 'antd';
 import moment from 'moment';
 import 'moment/locale/zh-cn';
 import BomList from './BomList';
 moment.locale('zh-cn');
 const {ipcRenderer} = window.require('electron')
 const FormItem = Form.Item;
-
-function hasErrors(fieldsError) {
-  return Object.keys(fieldsError).some(field => fieldsError[field]);
-}
 
 class OrderForm extends Component {
   constructor(props) {
@@ -22,12 +18,15 @@ class OrderForm extends Component {
   }
 
   componentDidMount() {
-    this.readProduct();
+    this.handleOrderPropsChange(this.props.order);
   }
 
   componentWillReceiveProps(nextProps){
     if(this.props.confirmLoading!==nextProps.confirmLoading && nextProps.confirmLoading===true){
       this.handleSubmit()
+    }
+    if(this.props.order._id!==nextProps.order._id){
+      this.handleOrderPropsChange(nextProps.order);
     }
   }
   
@@ -35,16 +34,42 @@ class OrderForm extends Component {
     e && e.preventDefault();
     this.props.form.validateFields((err, values) => {
       if (!err) {
-        ipcRenderer.once('c-order', (event, args)=>{
-          if(args.isSuccess){
-            this.props.onNewOrderCreated()
-          }
-        })
-        ipcRenderer.send('c-order', JSON.stringify(this.props.form.getFieldsValue()))
+        if(this.props.order._id){
+          //更新
+          let sendData=this.props.order;
+          Object.assign(sendData, this.props.form.getFieldsValue());
+          delete sendData.index;
+          ipcRenderer.once('u-order', (event, args)=>{
+            if(args.isSuccess){
+              this.props.onProcessOrderOver()
+            }
+          })
+          ipcRenderer.send('u-order', JSON.stringify(sendData));
+        }else{
+          //新增
+          ipcRenderer.once('c-order', (event, args)=>{
+            if(args.isSuccess){
+              this.props.onProcessOrderOver()
+            }
+          })
+          ipcRenderer.send('c-order', JSON.stringify(this.props.form.getFieldsValue()))
+        }
       }else{
         this.props.onValidateFailed()
       }
     });
+  }
+
+  handleOrderPropsChange=(order)=>{
+    // console.log(order)
+    this.props.form.setFields({
+      product_name: {value: order.product_name},
+      qty:{ value: order.qty},
+      date:{ value: moment(order.date) },
+      note:{ value: order.note }
+    });
+    this.setState({qty:order.qty})
+    this.handleProductChange(order.product_name);
   }
 
   handleProductChange=(v)=>{
@@ -61,7 +86,7 @@ class OrderForm extends Component {
   }
   
   render() {
-    const { getFieldDecorator, getFieldsError } = this.props.form;
+    const { getFieldDecorator } = this.props.form;
     const formItemLayout = {
       labelCol: { span: 3 },
       wrapperCol: { span: 18 },
@@ -80,6 +105,7 @@ class OrderForm extends Component {
             allowClear={true}
             dataSource={this.state.autoCompleteData}
             placeholder="产品名"
+            disabled={Boolean(this.props.order._id)}
           />)}
         </FormItem>
         <FormItem {...formItemLayout} label="数量">
