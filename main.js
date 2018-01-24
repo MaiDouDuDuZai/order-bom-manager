@@ -14,13 +14,15 @@ let mainWindow
 
 function createWindow () {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 800, height: 600})
+  mainWindow = new BrowserWindow({width: 1000, height: 800})
 
   // and load the index.html of the app. 
 	const pkg = require('./package.json') // 引用package.json 
 	//判断是否是开发模式 
 	if(pkg.DEV) { 
 	  mainWindow.loadURL("http://localhost:3000/")
+    // Open the DevTools.
+    mainWindow.webContents.openDevTools()
 	} else { 
 	  mainWindow.loadURL(url.format({
 		pathname:path.join(__dirname, './build/index.html'), 
@@ -28,9 +30,6 @@ function createWindow () {
 		slashes:true 
 	  }))
 	}
-
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools()
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
@@ -95,7 +94,7 @@ ipcMain.on('r-order', function (event, arg) {
   let results=arg.results||10;
   let page=arg.page||1;
   let sortObj={};
-  sortObj[arg.sortField||'_id']=(arg.sortOrder&&{descend:-1, ascend:1}[arg.sortOrder])||1;
+  sortObj[arg.sortField||'date']=(arg.sortOrder&&{descend:-1, ascend:1}[arg.sortOrder])||1;
   let findObj={};
   if(!arg.product_name){
     arg.product_name='';
@@ -129,7 +128,7 @@ ipcMain.on('d-order', function (event, arg) {
 
 //bom
 ipcMain.on('r-bom', function (event, arg) {
-   db.bom.find(arg, function(err, docs){
+   db.bom.find(arg).sort({material_name:1}).exec(function(err, docs){
       if(docs.length){
         let material_names=docs.map((item)=>item.material_name);
         db.material.find({name:{$in: material_names}}, function(err, material_docs){

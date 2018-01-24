@@ -88,8 +88,8 @@ class OrderForm extends Component {
   render() {
     const { getFieldDecorator } = this.props.form;
     const formItemLayout = {
-      labelCol: { span: 3 },
-      wrapperCol: { span: 18 },
+      labelCol: { span: 2 },
+      wrapperCol: { span: 20 },
     };
     const dateFormat='YYYY-MM-DD';
 
@@ -123,7 +123,7 @@ class OrderForm extends Component {
             initialValue:''
           })(<Input />)}
         </FormItem>
-        <FormItem {...{labelCol:{ span: 3 },wrapperCol:{ span: 18 }}} label="BOM">
+        <FormItem {...formItemLayout} label="BOM">
           <BomList productName={this.state.product_name} productQty={this.state.qty} />
         </FormItem>
       </Form>

@@ -8,7 +8,7 @@ const EditableCell = ({ editable, value, column, onChange, autoCompleteData }) =
       ? (
           column==='material_name' ?
             <AutoComplete 
-              style={{ margin: '-5px 0' }} 
+              style={{ margin: '-5px 0' }}
               value={value} 
               onChange={v => onChange(v)}
               dataSource={autoCompleteData}
@@ -32,12 +32,12 @@ class BomList extends Component {
       title: '#',
       dataIndex: 'index',
       key: 'index',
-      width:'5%',
+      width:'6%',
     }, {
       title: '材料',
       dataIndex: 'material_name',
       key: 'material_name',
-      width:'18%',
+      width:'22%',
       render: (text, record) => this.renderColumns(text, record, 'material_name'),
     }, {
       title: '描述',
@@ -48,12 +48,12 @@ class BomList extends Component {
       title: '单位用量',
       dataIndex: 'qty',
       key: 'qty',
-      width:'13%',
+      width:'11%',
       render: (text, record) => this.renderColumns(text, record, 'qty'),
     }, {
       title: '总用量',
       dataIndex: 'qty_total',
-      width:'15%',
+      width:'10%',
       key: 'qty_total',
       render:(text, record) => <span style={{color:'#1890ff'}}>{(record.qty/1000*this.props.productQty).toFixed(3)}</span>
     }, {
@@ -65,7 +65,7 @@ class BomList extends Component {
     }, {
       title: '操作',
       key: 'action',
-      width:'15%',
+      width:'12%',
       render: (text, record) => {
         const { editable } = record;
         return (
@@ -113,6 +113,10 @@ class BomList extends Component {
     const newData = [...this.state.bomData];
     const target = newData.filter(item => key === item._id)[0];
     if (target) {
+      if(['material_name','unit'].includes(column)){
+        //材料名,单位转大写
+        value=value?value.toUpperCase():'';
+      }
       target[column] = value;
       if(column==='material_name'){
         //材料名验证
