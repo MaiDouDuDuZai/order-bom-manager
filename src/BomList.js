@@ -55,7 +55,7 @@ class BomList extends Component {
       dataIndex: 'qty_total',
       width:'15%',
       key: 'qty_total',
-      render:(text, record) => <span style={{color:'#1890ff'}}>{(record.qty*this.props.productQty).toFixed(3)}</span>
+      render:(text, record) => <span style={{color:'#1890ff'}}>{(record.qty/1000*this.props.productQty).toFixed(3)}</span>
     }, {
       title: '单位',
       dataIndex: 'unit',
