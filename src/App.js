@@ -1,173 +1,89 @@
 import React, { Component } from 'react';
-import { Layout, Input, Button, Table, Row, Col, Popconfirm, Modal, Divider } from 'antd';
-import OrderForm from './OrderForm';
+import { Layout, Menu, Icon } from 'antd';
 import './App.css';
-import moment from 'moment';
-const {ipcRenderer} = window.require('electron')
-const { Header, Content } = Layout;
-const Search = Input.Search;
+import {BrowserRouter as Router,Route,Link} from 'react-router-dom'
+import Order from './Order';
+import Stock from './Stock';
+import StockTake from './StockTake';
+import StockReport from './StockReport';
+const { Header, Content, Sider, Footer } = Layout;
+const SubMenu = Menu.SubMenu;
 
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state={
-      data:[],
-      pagination: {},
-      loading: false,
-      remoteFilter:{},
-      visible: false,
-      confirmLoading: false,
-      curOrder:{}
-    };
-    this.columns = [{
-      title: '#',
-      dataIndex: 'index',
-      key: 'index'
-    },{
-      title: '产品',
-      dataIndex: 'product_name',
-      key: 'product_name',
-      sorter: true,
-    }, {
-      title: '数量',
-      dataIndex: 'qty',
-      key: 'qty',
-    }, {
-      title: '日期',
-      dataIndex: 'date',
-      key: 'date',
-      sorter: true,
-      render: (text)=>{
-        return (
-          moment(text).utcOffset(480).format('YYYY-MM-DD')
-        )
-      }
-    }, {
-      title: '备注',
-      dataIndex: 'note',
-      key: 'note',
-    }, {
-      title: '操作',
-      key: '操作',
-      render: (text, record) => {
-        return (
-          <span>
-            <a onClick={()=>this.showModal(record)}>编辑</a>
-            <Divider type='vertical' />
-            <Popconfirm title="确定删除?" okText="确定" cancelText="取消" onConfirm={() => this.onDelete(record._id)}>
-              <a>删除</a>
-            </Popconfirm>
-          </span>
-        )
-      },
-    }];
+    this.state={};
   }
 
-  handleTableChange = (pagination, filters, sorter) => {
-    const pager = { ...this.state.pagination };
-    pager.current = pagination.current;
+  toggle = () => {
     this.setState({
-      pagination: pager
+      collapsed: !this.state.collapsed,
     });
-    Object.assign(filters, this.state.remoteFilter)
-    this.fetch({
-      results: pagination.pageSize,
-      page: pagination.current,
-      sortField: sorter.field,
-      sortOrder: sorter.order,
-      ...filters,
-    });
-  }
-
-  fetch = (params = {}) => {
-    console.log('params:', params);
-    this.setState({ loading: true });
-    ipcRenderer.once('r-order', (event, args)=>{
-      const pagination = { ...this.state.pagination };
-      // Read total count from server
-      pagination.total = args.total;
-      this.setState({
-        loading: false,
-        data: args.list.map((item,index)=>Object.assign(item,{index:index+1})),
-        pagination,
-      });
-    })
-    ipcRenderer.send('r-order', {
-      results: 10,
-      ...params
-    });
-  }
-
-  onDelete=(id)=>{
-    ipcRenderer.once('d-order', (event, args)=>{
-      const data = [...this.state.data];
-      this.setState({ data: data.filter(item => item._id !== id) });
-    })
-    ipcRenderer.send('d-order', id);
-  }
-
-  componentDidMount() {
-    this.fetch();
-  }
-  
-  showModal = (curOrder={product_name:''}) => {
-    this.setState({
-      visible: true,
-      curOrder:curOrder
-    });
-  }
-  handleModalOk = (e) => {
-    this.setState({
-      confirmLoading: true,
-    });
-  }
-  handleModalCancel = (e) => {
-    this.setState({
-      visible: false,
-      confirmLoading: false,
-    });
-  }
-  onNewOrderCreated = () => {
-    this.setState({
-      visible: false,
-      confirmLoading:false
-    });
-    this.handleTableChange({},{},{})
   }
 
   render() {
     return (
+          <Router>
       <div className="App">
-        <Header>
-          <Row>
-            <Col span={2}>
-              <Button type="primary" onClick={()=>this.showModal()}>新增</Button>
-            </Col>
-            <Col span={8} offset={14}>
-              <Search placeholder="产品名" onChange={event=>this.setState({remoteFilter:{product_name:event.target.value}})} onSearch={()=>this.handleTableChange({},{},{})} />
-            </Col>
-          </Row>
-        </Header>
-        <Content>
-          <Table dataSource={this.state.data} pagination={this.state.pagination} loading={this.state.loading} onChange={this.handleTableChange} columns={this.columns} rowKey='_id' />
-          <Modal
-            title={(this.state.curOrder.product_name?'编辑':'新增')+"订单"}
-            okText="确定"
-            cancelText="取消"
-            visible={this.state.visible}
-            onOk={this.handleModalOk}
-            onCancel={this.handleModalCancel}
-            confirmLoading={this.state.confirmLoading}
+        <Layout style={{height:'100%'}}>
+          <Sider 
+            width='200' 
+            style={{background:'#fff'}}
+            trigger={null}
+            collapsible
+            collapsed={this.state.collapsed}
           >
-            <OrderForm
-              onProcessOrderOver={this.onNewOrderCreated} 
-              confirmLoading={this.state.confirmLoading} 
-              onValidateFailed={()=>this.setState({confirmLoading:false})} 
-              order={this.state.curOrder}
-            />
-          </Modal>
-        </Content>
+            <div className="logo" />
+              <Menu
+                onClick={this.handleClick}
+                defaultOpenKeys={['sub1','sub2']}
+                defaultSelectedKeys={['1']}
+                mode="inline"
+                >
+                <Menu.Item key="1">
+                  <Link to="/Order">
+                    <Icon type="profile" />
+                    <span>订单</span>
+                  </Link>
+                </Menu.Item>
+                <SubMenu key="sub1" title={<span><Icon type="home" /><span>库存</span></span>}>
+                  <Menu.Item key="2">
+                    <Link to="/Stock">材料库存</Link>
+                  </Menu.Item>
+                  <Menu.Item key="3">
+                    <Link to="/StockTake">库存盘点</Link>
+                  </Menu.Item>
+                </SubMenu>
+                <SubMenu key="sub2" title={<span><Icon type="line-chart" /><span>报表</span></span>}>
+                  <Menu.Item key="4">
+                    <Link to="/StockReport">库存报表</Link>
+                  </Menu.Item>
+                </SubMenu>
+              </Menu>
+          </Sider>
+          <Layout>
+            <Header style={{ background: '#fff', padding: 0 }}>
+              <Icon
+                className="trigger"
+                type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
+                onClick={this.toggle}
+                />
+            </Header>
+            <Content style={{ margin: '24px 16px', padding:'0 16 16'}}>
+              <div style={{ background: '#fff', padding: 24, minHeight: 280 }}>
+                <Route exact path="/Order" component={Order}/>
+                <Route exact path="/Stock" component={Stock}/>
+                <Route exact path="/StockTake" component={StockTake}/>
+                <Route exact path="/StockReport" component={StockReport}/>
+              </div>
+            </Content>
+            <Footer style={{ textAlign: 'center' }}>
+              ©2018
+            </Footer>
+          </Layout>
+        </Layout>
       </div>
+    </Router>
     );
   }
 }

@@ -213,6 +213,9 @@ class BomList extends Component {
         this.cacheBomData=docs.map(item => ({ ...item }))
       })
       ipcRenderer.send('r-bom', {product_name:v})
+    }else{
+      this.setState({bomData:[]});
+      this.cacheBomData=[];
     }
   }
 

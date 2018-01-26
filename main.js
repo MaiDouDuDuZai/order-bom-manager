@@ -94,7 +94,7 @@ ipcMain.on('r-order', function (event, arg) {
   let results=arg.results||10;
   let page=arg.page||1;
   let sortObj={};
-  sortObj[arg.sortField||'date']=(arg.sortOrder&&{descend:-1, ascend:1}[arg.sortOrder])||1;
+  sortObj[arg.sortField||'date']=(arg.sortOrder&&{descend:-1, ascend:1}[arg.sortOrder])||-1;
   let findObj={};
   if(!arg.product_name){
     arg.product_name='';

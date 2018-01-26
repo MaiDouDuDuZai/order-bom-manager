@@ -1,5 +1,17 @@
 @import '~antd/dist/antd.css';
 
+#root, .App{ height: 100%;}
 .ant-spin-nested-loading > div > .ant-spin{ left:0;}
-
 .ant-modal{ min-width: 900px;}
+.logo { height: 31px; background: #f0f2f5; margin: 16px; }
+.trigger {
+  font-size: 18px;
+  line-height: 64px;
+  padding: 0 24px;
+  cursor: pointer;
+  transition: color .3s;
+}
+
+.trigger:hover {
+  color: #1890ff;
+}
