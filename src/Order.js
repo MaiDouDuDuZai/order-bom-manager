@@ -42,6 +42,10 @@ class Order extends Component {
         )
       }
     }, {
+      title: '客户',
+      dataIndex: 'customer_name',
+      key: 'customer_name',
+    }, {
       title: '备注',
       dataIndex: 'note',
       key: 'note',
@@ -83,6 +87,7 @@ class Order extends Component {
     console.log('params:', params);
     this.setState({ loading: true });
     ipcRenderer.once('r-order', (event, args)=>{
+      console.log(args)
       const pagination = { ...this.state.pagination };
       // Read total count from server
       pagination.total = args.total;

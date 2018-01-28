@@ -3,7 +3,7 @@
 #root, .App{ height: 100%;}
 .ant-spin-nested-loading > div > .ant-spin{ left:0;}
 .ant-modal{ min-width: 900px;}
-.logo { height: 31px; background: #f0f2f5; margin: 16px; }
+.logo { height: 31px; background: rgba(255,255,255,.2); margin: 16px; }
 .trigger {
   font-size: 18px;
   line-height: 64px;

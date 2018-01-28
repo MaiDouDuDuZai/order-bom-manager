@@ -71,7 +71,8 @@ const db={
   order: new Datastore({ filename: userData+'/db/order.db', autoload: true }),
   bom: new Datastore({ filename: userData+'/db/bom.db', autoload: true }),
   material: new Datastore({ filename: userData+'/db/material.db', autoload: true }),
-  product: new Datastore({ filename: userData+'/db/product.db', autoload: true })
+  product: new Datastore({ filename: userData+'/db/product.db', autoload: true }),
+  customer: new Datastore({ filename: userData+'/db/customer.db', autoload: true }),
 };
 /* IPC's */
 //order
@@ -85,6 +86,12 @@ ipcMain.on('c-order', function (event, arg) {
   db.product.count({name: arg.product_name}, function(err,count){
     if(count==0){
       db.product.insert({name:arg.product_name}, function(err,newDoc){
+      })
+    }
+  })
+  db.customer.count({name: arg.customer_name}, function(err,count){
+    if(count==0){
+      db.customer.insert({name:arg.customer_name}, function(err,newDoc){
       })
     }
   })
@@ -118,6 +125,12 @@ ipcMain.on('u-order', function (event, arg) {
       event.sender.send('u-order', {isSuccess:true})
     }
   });
+  db.customer.count({name: arg.customer_name}, function(err,count){
+    if(count==0){
+      db.customer.insert({name:arg.customer_name}, function(err,newDoc){
+      })
+    }
+  })
 });
 
 ipcMain.on('d-order', function (event, arg) {
@@ -193,5 +206,16 @@ ipcMain.on('r-product', function (event, arg) {
   db.product.find({name:{$regex: new RegExp(arg,'i')}}, {name:1}).limit(15).exec(function (err, docs) {
     docs=docs.map((item)=>item.name)
     event.sender.send('r-product', docs)
+  })
+});
+
+//customer
+ipcMain.on('r-customer', function (event, arg) {
+  if(!arg){
+    arg='.*'
+  }
+  db.customer.find({name:{$regex: new RegExp(arg,'i')}}, {name:1}).limit(15).exec(function (err, docs) {
+    docs=docs.map((item)=>item.name)
+    event.sender.send('r-customer', docs)
   })
 });

@@ -66,6 +66,7 @@ class OrderForm extends Component {
       product_name: {value: order.product_name},
       qty:{ value: order.qty},
       date:{ value: moment(order.date) },
+      customer_name:{ value: order.customer_name },
       note:{ value: order.note }
     });
     this.setState({qty:order.qty})
@@ -117,6 +118,11 @@ class OrderForm extends Component {
           {getFieldDecorator('date', {
             initialValue:moment()
           })(<DatePicker style={{width:'100%'}} format={dateFormat} />)}
+        </FormItem>
+        <FormItem {...formItemLayout} label="客户">
+          {getFieldDecorator('customer_name', {
+            initialValue:''
+          })(<Input />)}
         </FormItem>
         <FormItem {...formItemLayout} label="备注">
           {getFieldDecorator('note', {
