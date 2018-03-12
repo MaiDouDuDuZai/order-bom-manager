@@ -1,32 +1,30 @@
 import React, { Component } from 'react';
-import { Form, Input, InputNumber, DatePicker, AutoComplete } from 'antd';
+import { connect } from 'react-redux'
+import { Form, Input, Select, InputNumber, DatePicker, AutoComplete } from 'antd';
 import moment from 'moment';
 import 'moment/locale/zh-cn';
 import BomList from './BomList';
+import { setTimeout } from 'core-js/library/web/timers';
 moment.locale('zh-cn');
 const {ipcRenderer} = window.require('electron')
 const FormItem = Form.Item;
+const Option = Select.Option;
 
 class OrderForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
       autoCompleteData: [],
-      product_name:'',
-      qty:0
     };
+    this.timer=0;
   }
 
   componentDidMount() {
-    this.handleOrderPropsChange(this.props.order);
   }
 
   componentWillReceiveProps(nextProps){
     if(this.props.confirmLoading!==nextProps.confirmLoading && nextProps.confirmLoading===true){
       this.handleSubmit()
-    }
-    if(this.props.order._id!==nextProps.order._id){
-      this.handleOrderPropsChange(nextProps.order);
     }
   }
   
@@ -36,12 +34,11 @@ class OrderForm extends Component {
       if (!err) {
         if(this.props.order._id){
           //更新
-          let sendData=this.props.order;
-          Object.assign(sendData, this.props.form.getFieldsValue());
+          let sendData={...this.props.order, ...this.props.form.getFieldsValue()};
           delete sendData.index;
           ipcRenderer.once('u-order', (event, args)=>{
             if(args.isSuccess){
-              this.props.onProcessOrderOver()
+              this.props.onProcessOver()
             }
           })
           ipcRenderer.send('u-order', JSON.stringify(sendData));
@@ -49,7 +46,7 @@ class OrderForm extends Component {
           //新增
           ipcRenderer.once('c-order', (event, args)=>{
             if(args.isSuccess){
-              this.props.onProcessOrderOver()
+              this.props.onProcessOver()
             }
           })
           ipcRenderer.send('c-order', JSON.stringify(this.props.form.getFieldsValue()))
@@ -60,30 +57,15 @@ class OrderForm extends Component {
     });
   }
 
-  handleOrderPropsChange=(order)=>{
-    // console.log(order)
-    this.props.form.setFields({
-      product_name: {value: order.product_name},
-      qty:{ value: order.qty},
-      date:{ value: moment(order.date) },
-      customer_name:{ value: order.customer_name },
-      note:{ value: order.note }
-    });
-    this.setState({qty:order.qty})
-    this.handleProductChange(order.product_name);
-  }
-
-  handleProductChange=(v)=>{
-    this.setState({product_name:v});
-    this.readProduct(v);
-  }
-
-  readProduct=(v)=>{
+  readProduct=()=>{
     //fetch autoComplete data
-    ipcRenderer.once('r-product', (event, docs)=>{
-      this.setState({autoCompleteData:docs});
-    })
-    ipcRenderer.send('r-product', v)
+    clearTimeout(this.timer);
+    this.timer=setTimeout(()=>{
+      ipcRenderer.once('r-product', (event, docs)=>{
+        this.setState({autoCompleteData:docs});
+      })
+      ipcRenderer.send('r-product', this.props.order.product_name.value)
+    },250)
   }
   
   render() {
@@ -102,7 +84,7 @@ class OrderForm extends Component {
               required: true, message: '产品名必须!',
             }],
           })(<AutoComplete
-            onChange={this.handleProductChange}
+            onChange={this.readProduct}
             allowClear={true}
             dataSource={this.state.autoCompleteData}
             placeholder="产品名"
@@ -112,7 +94,7 @@ class OrderForm extends Component {
         <FormItem {...formItemLayout} label="数量">
           {getFieldDecorator('qty', {
             initialValue:0
-          })(<InputNumber onChange={(v)=>this.setState({qty:v})} style={{width:'100%'}} />)}
+          })(<InputNumber style={{width:'100%'}} />)}
         </FormItem>
         <FormItem {...formItemLayout} label="日期">
           {getFieldDecorator('date', {
@@ -121,22 +103,80 @@ class OrderForm extends Component {
         </FormItem>
         <FormItem {...formItemLayout} label="客户">
           {getFieldDecorator('customer_name', {
-            initialValue:''
           })(<Input />)}
         </FormItem>
         <FormItem {...formItemLayout} label="备注">
           {getFieldDecorator('note', {
-            initialValue:''
           })(<Input />)}
         </FormItem>
+        <FormItem {...formItemLayout} label="状态">
+          {getFieldDecorator('status', {
+            initialValue:'未生产'
+          })(
+            <Select>
+              <Option value="未生产">未生产</Option>
+              <Option value="生产中">生产中</Option>
+              <Option value="已完成">已完成</Option>
+            </Select>
+          )}
+        </FormItem>
         <FormItem {...formItemLayout} label="BOM">
-          <BomList productName={this.state.product_name} productQty={this.state.qty} />
+          <BomList />
         </FormItem>
       </Form>
     );
   }
 }
 
-const WrappedOrderForm = Form.create()(OrderForm);
+const WrappedOrderForm = Form.create({
+  mapPropsToFields(props) {
+    return {
+      product_name: Form.createFormField({
+        ...props.order.product_name,
+        value: props.order.product_name.value,
+      }),
+      qty: Form.createFormField({
+        ...props.order.qty,
+        value: props.order.qty.value,
+      }),
+      date: Form.createFormField({
+        ...props.order.date,
+        value: moment(props.order.date.value),
+      }),
+      customer_name: Form.createFormField({
+        ...props.order.customer_name,
+        value: props.order.customer_name.value,
+      }),
+      note: Form.createFormField({
+        ...props.order.note,
+        value: props.order.note.value,
+      }),
+      status: Form.createFormField({
+        ...props.order.status,
+        value: props.order.status.value,
+      }),
+    };
+  },
+  onFieldsChange(props, changedFields) {
+    props.updateOrder(changedFields);
+  },
+})(OrderForm);
 
-export default WrappedOrderForm;
+const mapStateToProps = (state) => {
+  return {
+    order: state.order
+  }
+}
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    updateOrder: (changedFields) => {
+      dispatch({type:'UPDATE_ORDER', order:changedFields})
+    }
+  }
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(WrappedOrderForm)
