@@ -4,6 +4,7 @@
 {"name":"W-5903-0079","desc":"","unit":"ST","_id":"BWCzP1dQCgDDLSjO"}
 {"name":"W-9401-0626","desc":"","unit":"ST","_id":"GdJSrDQcJu3V4VdT"}
 {"name":"A-9401-0207","desc":"","unit":"ST","_id":"Ib5BFsFVQsmCnHHu"}
+{"cate":"胶带","desc":"","modified":"2018-03-12T20:43:38+08:00","unit":"M","name":"X-2000","_id":"MQiEtILDdwUpWqay"}
 {"name":"W-9602-0040","desc":"","unit":"ST","_id":"RG5GlpEPgWujCUGY"}
 {"name":"W-9501-0003","desc":"","unit":"ST","_id":"UFnRGdC3pji7wck6"}
 {"name":"W-0906-0556","desc":"","unit":"ST","_id":"bBaOxugjTf7jD78Q"}
@@ -21,9 +22,5 @@
 {"name":"W-1800-0954","desc":"","unit":"ST","_id":"shh2JHDfE2qO67ni"}
 {"desc":"CLEANING","modified":"2018-03-12T19:18:12+08:00","unit":"ST","cate":"辅料","name":"A-2551","_id":"ti02BhH57GESE8E5"}
 {"name":"W-3000-0003","desc":"CLEANING 5100 IMAJE","unit":"ST","_id":"uOj1tZdgUlUyq1Ux"}
-{"desc":"","modified":"2018-03-12T19:18:12+08:00","unit":"ST","cate":"辅料","name":"W-3000","_id":"uatP3julxtXwimd9"}
-{"desc":"","modified":"2018-03-12T19:18:12+08:00","unit":"ST","cate":"辅料","name":"A-9401","_id":"ySkRPJu1b9IH8juC"}
 {"desc":"","unit":"ST","cate":"辅料","name":"W-3000","_id":"uatP3julxtXwimd9"}
-{"desc":"","unit":"","cate":"","name":"X-2000","_id":"MQiEtILDdwUpWqay"}
-{"cate":"胶带","desc":"","modified":"2018-03-12T20:43:04+08:00","unit":"M","name":"X-2000","_id":"MQiEtILDdwUpWqay"}
-{"cate":"胶带","desc":"","modified":"2018-03-12T20:43:38+08:00","unit":"M","name":"X-2000","_id":"MQiEtILDdwUpWqay"}
+{"desc":"","modified":"2018-03-12T19:18:12+08:00","unit":"ST","cate":"辅料","name":"A-9401","_id":"ySkRPJu1b9IH8juC"}

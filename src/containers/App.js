@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Layout, Menu, Icon } from 'antd';
 import '../App.css';
-import {BrowserRouter as Router,Route,Link,Redirect} from 'react-router-dom'
+import {MemoryRouter,Route,Link} from 'react-router-dom'
 import Order from './Order';
 import Stock from './Stock';
 import StockLog from './StockLog';
@@ -23,7 +23,10 @@ class App extends Component {
 
   render() {
     return (
-      <Router>
+      <MemoryRouter
+        initialEntries={[ '/order' ]}
+        initialIndex={1}
+      >
         <div className="App">
           <Layout style={{height:'100%'}}>
             <Sider 
@@ -70,9 +73,6 @@ class App extends Component {
               </Header>
               <Content style={{ margin: '24px 16px', padding:'0 16 16'}}>
                 <div style={{ background: '#fff', padding: 24, minHeight: 280 }}>
-                  <Route exact path="/" render={() => (
-                      <Redirect to="/Order"/>
-                  )}/>
                   <Route exact path="/Order" component={Order}/>
                   <Route exact path="/Stock" component={Stock}/>
                   <Route exact path="/StockLog" component={StockLog}/>
@@ -85,7 +85,7 @@ class App extends Component {
             </Layout>
           </Layout>
         </div>
-      </Router>
+      </MemoryRouter>
     );
   }
 }
