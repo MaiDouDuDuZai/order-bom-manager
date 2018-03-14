@@ -14,6 +14,7 @@ class StockInout extends Component {
     this.state = {
       bomData: [],
       autoCompleteData: [],
+      type:'in'
     };
     this.timer=0;
     this.columns = [{
@@ -79,6 +80,8 @@ class StockInout extends Component {
     }
     if(this.props.order.product_name.value!==nextProps.order.product_name.value){
       this.readBom(nextProps.order.product_name.value);
+    }else{
+      this.readBom(this.props.order.product_name.value);
     }
   }
   
@@ -91,7 +94,8 @@ class StockInout extends Component {
       ipcRenderer.once('r-bom', (event, docs)=>{
         docs=docs.map(d=>{
           let total_qty=(d.qty/1000*this.props.order.qty.value).toFixed(3);
-          return Object.assign(d,{diff: total_qty, total_qty})
+          let diff=this.props.type==='in'?total_qty:total_qty*-1;
+          return Object.assign(d,{diff, total_qty})
         })
         this.setState({bomData:docs})
         this.cacheBomData=docs.map(item => ({ ...item }))
@@ -120,6 +124,7 @@ class StockInout extends Component {
         this.props.onProcessOver()
         this.readBom();//刷新库存
       }else{
+        console.log(args)
         message.error(args.msg)
       }
     })

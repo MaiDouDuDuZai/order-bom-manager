@@ -20,7 +20,8 @@
 {"name":"W-2101-0022","desc":"","unit":"KG","_id":"oNCZmu4tzVVCz4H0"}
 {"name":"A-9401-0288","desc":"","unit":"ST","_id":"q7EtD8jBulzEuvzN"}
 {"name":"W-1800-0954","desc":"","unit":"ST","_id":"shh2JHDfE2qO67ni"}
-{"desc":"CLEANING","modified":"2018-03-12T19:18:12+08:00","unit":"ST","cate":"辅料","name":"A-2551","_id":"ti02BhH57GESE8E5"}
+{"cate":"辅料","desc":"CLEANING","modified":"2018-03-14T13:43:29+08:00","unit":"ST","name":"A-2551","_id":"ti02BhH57GESE8E5"}
 {"name":"W-3000-0003","desc":"CLEANING 5100 IMAJE","unit":"ST","_id":"uOj1tZdgUlUyq1Ux"}
 {"desc":"","unit":"ST","cate":"辅料","name":"W-3000","_id":"uatP3julxtXwimd9"}
 {"desc":"","modified":"2018-03-12T19:18:12+08:00","unit":"ST","cate":"辅料","name":"A-9401","_id":"ySkRPJu1b9IH8juC"}
+{"cate":"辅料","desc":"CLEANING","modified":"2018-03-14T13:49:57+08:00","unit":"ST","name":"A-2551","_id":"ti02BhH57GESE8E5"}

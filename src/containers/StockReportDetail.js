@@ -71,6 +71,14 @@ class StockReportDetail extends Component {
     this.fetch();
   }
 
+  componentWillReceiveProps(nextProps){
+    if(this.props.id!==nextProps.id){
+      this.fetch({_id: nextProps.id});;
+    }else{
+      this.fetch();
+    }
+  }
+
   fetch = (params = {_id: this.props.id}) => {
     // console.log('params:', params);
     this.setState({ loading: true });

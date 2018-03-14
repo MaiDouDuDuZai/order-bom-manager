@@ -164,7 +164,6 @@ ipcMain.on('r-bom', function (event, arg) {
             for(let i in docs){
               Object.assign(docs[i], item[docs[i].item_name])
             }
-            console.log(docs)
             event.sender.send('r-bom', docs)
           })
         }else{
@@ -222,6 +221,7 @@ ipcMain.on('r-product', function (event, arg) {
   if(!arg){
     arg='.*'
   }
+  arg=arg.replace(/[\[\]]/g,'');
   db.product.find({name:{$regex: new RegExp(arg,'i')}}, {name:1}).limit(15).exec(function (err, docs) {
     docs=docs.map((item)=>item.name)
     event.sender.send('r-product', docs)
@@ -363,7 +363,7 @@ ipcMain.on('c-itemStock', function (event, arg){
 ipcMain.on('u-itemStock', function (event, arg){
   arg=JSON.parse(arg);
   arg.name=arg.item_name;
-  const newStock={item_name:arg.name, qty:arg.qty, modified:moment().format()};
+  const newStock={item_name:arg.name, qty:parseFloat(arg.qty), modified:moment().format()};
   delete arg.item_name;
   delete arg.qty;
   delete arg._id;
