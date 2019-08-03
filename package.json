@@ -7,14 +7,17 @@
   "homepage": ".",
   "DEV": true,
   "dependencies": {
+    "ajv": "^6.10.2",
     "antd": "^3.1.3",
+    "jquery": "^1.12.4",
     "nedb": "^1.8.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-redux": "^5.0.6",
     "react-router-dom": "^4.2.2",
-    "react-scripts": "1.1.0",
-    "redux": "^3.7.2"
+    "react-scripts": "^3.0.1",
+    "redux": "^3.7.2",
+    "typescript": "^3.5.3"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -24,5 +27,17 @@
   },
   "devDependencies": {
     "electron": "^1.7.10"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
