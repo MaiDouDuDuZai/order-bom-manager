@@ -12,6 +12,12 @@ npm start
 node_modules/.bin/electron .
 ```
 
+## Packaging
+```bash
+npm run build
+npm run electron-build
+```
+
 ## Screenshots
 ![](./screenshots/order_list.jpg)
 ![](./screenshots/order_detail_1.jpg)
