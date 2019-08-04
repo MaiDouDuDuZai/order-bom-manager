@@ -10,6 +10,9 @@ const ipcMain = electron.ipcMain
 const path = require('path')
 const url = require('url')
 
+const log = require('electron-log');
+
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
@@ -19,20 +22,20 @@ function createWindow () {
   mainWindow = new BrowserWindow({width: 1000, height: 800})
 
   // and load the index.html of the app. 
-	const pkg = require('./package.json') // 引用package.json 
+	const pkg = require('../package.json') // 引用package.json 
 	//判断是否是开发模式 
 	if(pkg.DEV) { 
 	  mainWindow.loadURL("http://localhost:3000/")
     // Open the DevTools.
     mainWindow.webContents.openDevTools()
-	} else { 
+	} else {
 	  mainWindow.loadURL(url.format({
-		pathname:path.join(__dirname, './build/index.html'), 
-		protocol:'file:', 
-		slashes:true 
-	  }))
-	}
-
+      pathname:path.join(__dirname, '../build/index.html'), 
+      protocol:'file:', 
+      slashes:true 
+    }))
+  }
+  
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
     // Dereference the window object, usually you would store windows
@@ -68,7 +71,8 @@ app.on('activate', function () {
 // code. You can also put them in separate files and require them here.
 
 const Datastore = require('nedb');
-const userData = app.getAppPath('userData').replace('/app.asar', '');
+const userData = app.getAppPath('exe').replace(/app.asar/, '');
+log.info(userData);
 const db={
   order: new Datastore({ filename: userData+'/db/order.db', autoload: true }),
   bom: new Datastore({ filename: userData+'/db/bom.db', autoload: true }),

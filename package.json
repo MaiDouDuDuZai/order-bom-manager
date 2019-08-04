@@ -1,14 +1,17 @@
 {
   "name": "order-bom-manager",
   "productName": "order-bom-manager",
+  "description": "A simple order/stock manager for manufacturing. Based on electron react nedb ant-design.",
   "version": "0.1.0",
+  "author": "maidoududuzai@github",
   "private": true,
-  "main": "main.js",
+  "main": "public/electron.js",
   "homepage": ".",
-  "DEV": true,
+  "DEV": false,
   "dependencies": {
     "ajv": "^6.10.2",
     "antd": "^3.1.3",
+    "electron-log": "^3.0.7",
     "jquery": "^1.12.4",
     "nedb": "^1.8.0",
     "react": "^16.2.0",
@@ -23,10 +26,18 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "electron-build": "electron-builder"
   },
   "devDependencies": {
-    "electron": "^1.7.10"
+    "electron": "^1.7.10",
+    "electron-builder": "^21.2.0"
+  },
+  "build": {
+    "appId": "com.electron.electron-obm",
+    "extraResources": [
+      "db"
+    ]
   },
   "browserslist": {
     "production": [
