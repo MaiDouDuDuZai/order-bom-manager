@@ -1,4 +1,5 @@
 const electron = require('electron')
+
 const moment = require('moment')
 moment.locale('zh-cn');
 // Module to control application life.
