@@ -13,6 +13,7 @@ node_modules/.bin/electron .
 ```
 
 ## Packaging
+Manually modify the "DEV" property in package.json to "false".
 ```bash
 npm run build
 npm run electron-build
