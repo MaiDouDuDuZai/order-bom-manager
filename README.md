@@ -20,6 +20,8 @@ npm run electron-build
 ```
 
 ## Screenshots
-![](./screenshots/order_list.jpg)
-![](./screenshots/order_detail_1.jpg)
-![](./screenshots/stock.jpg)
+![](https://images.gitee.com/uploads/images/2020/0720/163424_66e91077_4857616.png)
+![](https://images.gitee.com/uploads/images/2020/0720/163528_4bdc3883_4857616.png)
+![](https://images.gitee.com/uploads/images/2020/0720/163540_462f74f9_4857616.png)
+![](https://images.gitee.com/uploads/images/2020/0720/163555_f2b9fb3c_4857616.png)
+![](https://images.gitee.com/uploads/images/2020/0720/163604_114df8f1_4857616.png)
