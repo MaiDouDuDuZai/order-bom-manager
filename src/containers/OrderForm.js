@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
-import { Form, Input, Select, InputNumber, DatePicker, AutoComplete } from 'antd';
+import { Form, Input, Select, InputNumber, DatePicker, AutoComplete, message } from 'antd';
 import moment from 'moment';
 import 'moment/locale/zh-cn';
-import BomList from './BomList';
+import BomList from '../components/BomList';
 import { setTimeout } from 'core-js/library/web/timers';
 moment.locale('zh-cn');
 const {ipcRenderer} = window.require('electron')
@@ -15,6 +15,7 @@ class OrderForm extends Component {
     super(props);
     this.state = {
       autoCompleteData: [],
+      refreshBom:false
     };
     this.timer=0;
   }
@@ -30,6 +31,7 @@ class OrderForm extends Component {
   
   handleSubmit = (e) => {
     e && e.preventDefault();
+    //订单提交
     this.props.form.validateFields((err, values) => {
       if (!err) {
         if(this.props.order._id){
@@ -55,16 +57,36 @@ class OrderForm extends Component {
         this.props.onValidateFailed()
       }
     });
+    //库存提交
+    ipcRenderer.once('u-stock', (event, args)=>{
+      if(args.isSuccess){
+        this.props.onProcessOver()
+        //刷新库存
+        this.setState({refreshBom:()=>this.setState({refreshBom:false})})
+      }else{
+        console.log(args)
+        message.error(args.msg)
+      }
+    })
+    ipcRenderer.send('u-stock', JSON.stringify({
+      type: '订单',
+      desc: '订单'+this.props.order.product_name.value+'@'+moment(this.props.order.date.value).utcOffset(480).format('YYYY-MM-DD'),
+      data: this.props.bomData
+    }))
   }
 
   readProduct=()=>{
     //fetch autoComplete data
     clearTimeout(this.timer);
     this.timer=setTimeout(()=>{
-      ipcRenderer.once('r-product', (event, docs)=>{
+      ipcRenderer.once('r-product', (event, data)=>{
+        let docs=data.list;
         this.setState({autoCompleteData:docs});
+        if(docs[0]){
+          this.props.form.setFieldsValue({scrap_rate:docs[0].scrap_rate});
+        }
       })
-      ipcRenderer.send('r-product', this.props.order.product_name.value)
+      ipcRenderer.send('r-product', {name:this.props.order.product_name.value})
     },250)
   }
   
@@ -72,7 +94,7 @@ class OrderForm extends Component {
     const { getFieldDecorator } = this.props.form;
     const formItemLayout = {
       labelCol: { span: 2 },
-      wrapperCol: { span: 20 },
+      wrapperCol: { span: 21 },
     };
     const dateFormat='YYYY-MM-DD';
 
@@ -86,7 +108,7 @@ class OrderForm extends Component {
           })(<AutoComplete
             onChange={this.readProduct}
             allowClear={true}
-            dataSource={this.state.autoCompleteData}
+            dataSource={this.state.autoCompleteData.map((item)=>item.name)}
             placeholder="产品名"
             disabled={Boolean(this.props.order._id)}
           />)}
@@ -105,6 +127,10 @@ class OrderForm extends Component {
           {getFieldDecorator('customer_name', {
           })(<Input />)}
         </FormItem>
+        <FormItem {...formItemLayout} label="报废率" help="*-9[4567]...的材料不计算报废率">
+          {getFieldDecorator('scrap_rate', {
+          })(<Input addonAfter="%" />)}
+        </FormItem>
         <FormItem {...formItemLayout} label="备注">
           {getFieldDecorator('note', {
           })(<Input />)}
@@ -121,7 +147,7 @@ class OrderForm extends Component {
           )}
         </FormItem>
         <FormItem {...formItemLayout} label="BOM">
-          <BomList />
+          <BomList hiddenColumns={[]} refreshBom={this.state.refreshBom} />
         </FormItem>
       </Form>
     );
@@ -147,6 +173,10 @@ const WrappedOrderForm = Form.create({
         ...props.order.customer_name,
         value: props.order.customer_name.value,
       }),
+      scrap_rate: Form.createFormField({
+        ...props.order.scrap_rate,
+        value: props.order.scrap_rate.value,
+      }),
       note: Form.createFormField({
         ...props.order.note,
         value: props.order.note.value,
@@ -158,13 +188,17 @@ const WrappedOrderForm = Form.create({
     };
   },
   onFieldsChange(props, changedFields) {
+    if(changedFields.product_name && changedFields.product_name.value){
+      changedFields.product_name.value = changedFields.product_name.value.toUpperCase();
+    }
     props.updateOrder(changedFields);
   },
 })(OrderForm);
 
 const mapStateToProps = (state) => {
   return {
-    order: state.order
+    order: state.order,
+    bomData: state.bomData
   }
 }
 

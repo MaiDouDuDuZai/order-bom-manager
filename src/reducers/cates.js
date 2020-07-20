@@ -1,6 +1,6 @@
 // reducer
 export default function (state, action) {
-  const initialCates=["骨架","辅料","磁芯","漆包线","胶带","设备","测试夹具","检验板"];
+  const initialCates=["骨架","辅料","磁芯","漆包线","胶带","设备","测试夹具","检验板","套管","铜箔"];
   if (!state) {
     state = [...initialCates]
   }

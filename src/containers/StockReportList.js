@@ -3,6 +3,7 @@ import { Table, Row, Col, Button, message, Modal, Divider, Popconfirm } from 'an
 import '../App.css';
 import moment from 'moment';
 import StockReportDetail from './StockReportDetail';
+import ExportJsonExcel from 'js-export-excel';
 const {ipcRenderer} = window.require('electron')
 
 class StockReport extends Component {
@@ -37,10 +38,12 @@ class StockReport extends Component {
       render: (text, record) => {
         return (
           <span>
-            <a onClick={() => this.showModal(record._id)}>查看</a>
+            <Button type='link' style={{padding:0}} onClick={() => this.showModal(record._id)}>查看</Button>
+            <Divider type='vertical' />
+            <Button type='link' style={{padding:0}} onClick={() => this.exportReport(record._id)}>导出</Button>
             <Divider type='vertical' />
             <Popconfirm title="确定删除?" okText="确定" cancelText="取消" onConfirm={() => this.remove(record._id)}>
-              <a style={{color:'#f5222d'}}>删除</a>
+              <Button type='link' style={{padding:0, color:'#f5222d'}}>删除</Button>
             </Popconfirm>
           </span>
         );
@@ -72,7 +75,7 @@ class StockReport extends Component {
   }
 
   handleTableChange = (pagination={}, filters={}, sorter={}) => {
-    console.log(filters);
+    // console.log(filters);
     const pager = { ...this.state.pagination };
     pager.current = pagination.current;
     this.setState({
@@ -120,6 +123,52 @@ class StockReport extends Component {
     this.setState({data:newData});
   }
 
+  exportReport(_id) {
+    const target = this.state.data.filter(v=>v._id===_id)[0];
+    this.setState({ loading: true });
+    ipcRenderer.once('r-stockReport', (event, doc)=>{
+      const list=doc.report;
+      const cates={};//分类后的list
+      for(let row of list){
+        if(!row.cate){
+          row.cate='未分类'
+        }
+        if(!cates[row.cate]){
+          cates[row.cate]={data:[]}
+        }
+        row.index=cates[row.cate].data.length+1;
+        cates[row.cate].data.push(row);
+      }
+      //未分类放最后面
+      if(cates['未分类']){
+        const noCate=cates['未分类'];
+        delete cates['未分类'];
+        cates['未分类']=noCate;
+      }
+      this.setState({
+        loading: false,
+      });
+      var option = {};
+      option.fileName = "库存报表导出" + target.time;
+      option.datas = [];
+      for (const key in cates) {
+        option.datas.push({
+          sheetData: cates[key].data,
+          sheetName: key,
+          sheetFilter: ['item_name','cate','desc','qty','prevQty','in','out','unit'],
+          sheetHeader: ['物品','分类','描述','库存','上期库存','入库','出库','单位'],
+          columnWidths: [10, 5, 10, 10, 10, 10, 10, 5],
+        })
+      }
+      var toExcel = new ExportJsonExcel(option); //new
+      toExcel.saveExcel(); //保存
+    })
+    ipcRenderer.send('r-stockReport', {
+      results: 1,
+      _id: _id,
+    });
+  }
+
   render() {
     return (
       <div>
@@ -128,7 +177,7 @@ class StockReport extends Component {
             <Button type="primary" onClick={this.generate}>生成报表</Button>
           </Col>
         </Row>
-        <Table dataSource={this.state.data} pagination={this.state.pagination} loading={this.state.loading} onChange={this.handleTableChange} columns={this.columns} rowKey='_id' size='small' />;
+        <Table dataSource={this.state.data} pagination={this.state.pagination} loading={this.state.loading} onChange={this.handleTableChange} columns={this.columns} rowKey='_id' size='small' />
         <Modal
           title={"库存报表"}
           okText="确定"
@@ -136,11 +185,12 @@ class StockReport extends Component {
           visible={this.state.modalVisible}
           onCancel={this.handleModalCancel}
           footer={null}
+          width="900px"
           >
           <StockReportDetail id={this.state.curId} />
         </Modal>
       </div>
-    );
+    )
   }
 }
 

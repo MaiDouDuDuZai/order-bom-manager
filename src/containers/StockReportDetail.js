@@ -20,12 +20,13 @@ class StockReportDetail extends Component {
       title: '#',
       dataIndex: 'index',
       key: 'index',
-      width: '2.5em',
+      width: '3em',
     },{
       title: '物品',
       dataIndex: 'item_name',
       key: 'item_name',
       width: '9em',
+      sorter: (a, b) => a.item_name>b.item_name ?1:-1,
     }, {
       title: '描述',
       dataIndex: 'desc',
@@ -53,13 +54,13 @@ class StockReportDetail extends Component {
       width: '6em',
       sorter: (a, b) => a.in - b.in,
     }, {
-      title: '领料',
+      title: '出库',
       dataIndex: 'out',
       key: 'out',
       width: '6em',
       sorter: (a, b) => a.out - b.out,
     }, {
-      title: '本期库存',
+      title: '库存',
       dataIndex: 'qty',
       key: 'qty',
       width: '7em',

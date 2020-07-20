@@ -6,6 +6,7 @@ export default function (state, action) {
     unit:{ value:'' },
     cate:{ value:'' },
     qty:{ value:0 },
+    ceil:{ value:false },
   };
   if (!state) {
     state = {...blankItemStock}

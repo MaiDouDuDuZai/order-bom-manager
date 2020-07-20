@@ -6,6 +6,7 @@ import './index.css';
 import App from './containers/App';
 import appReducer from './reducers/index'
 import registerServiceWorker from './registerServiceWorker';
+import { ConfigProvider } from 'antd';
 
 const store = createStore(appReducer)
 //这两行解决部署时URL scheme "file" is not supported.问题
@@ -14,7 +15,9 @@ webFrame.registerURLSchemeAsPrivileged('file');
 
 ReactDOM.render(
   <Provider store={store}>
-    <App />
+    <ConfigProvider {...{autoInsertSpaceInButton: false}}>
+      <App />
+    </ConfigProvider>
   </Provider>,
 document.getElementById('root')
 );

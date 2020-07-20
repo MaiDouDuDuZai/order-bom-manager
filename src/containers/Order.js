@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
-import { Input, Button, Table, Row, Col, Popconfirm, Modal, Divider } from 'antd';
+import { Input, Button, Table, Row, Col, Popconfirm, Modal, Divider, Form } from 'antd';
 import OrderForm from './OrderForm';
 import StockInout from './StockInout';
 import '../App.css';
 import moment from 'moment';
 const {ipcRenderer} = window.require('electron')
 const Search = Input.Search;
+const FormItem = Form.Item;
 
 class Order extends Component {
   constructor(props) {
@@ -32,13 +33,13 @@ class Order extends Component {
       title: '#',
       dataIndex: 'index',
       key: 'index',
-      width: '2em',
+      width: '3.5em',
     },{
       title: '产品',
       dataIndex: 'product_name',
       key: 'product_name',
       sorter: true,
-      width: '9em',
+      width: '10em',
     }, {
       title: '数量',
       dataIndex: 'qty',
@@ -59,7 +60,13 @@ class Order extends Component {
       title: '客户',
       dataIndex: 'customer_name',
       key: 'customer_name',
-      width:'12em',
+      width:'6em',
+    }, {
+      title: '报废率',
+      dataIndex: 'scrap_rate',
+      key: 'scrap_rate',
+      width:'6em',
+      render: (text)=>text+'%'
     }, {
       title: '备注',
       dataIndex: 'note',
@@ -72,18 +79,18 @@ class Order extends Component {
     }, {
       title: '操作',
       key: '操作',
-      width: '16em',
+      width: '8em',
       render: (text, record) => {
         return (
           <span>
-            <a onClick={()=>this.showModal(record)}>编辑</a>
+            <Button type='link' style={{padding:0}} onClick={()=>this.showModal(record)}>编辑</Button>
             <Divider type='vertical' />
-            <a onClick={() => this.showModal(record,'stockInout','in')}>物料入库</a>
+            {/* <a onClick={() => this.showModal(record,'stockInout','in')}>物料入库</a>
             <Divider type='vertical' />
             <a onClick={() => this.showModal(record,'stockInout','out')}>领料</a>
-            <Divider type='vertical' />
+            <Divider type='vertical' /> */}
             <Popconfirm title="确定删除?" okText="确定" cancelText="取消" onConfirm={() => this.onDelete(record._id)}>
-              <a style={{color:'#f5222d'}}>删除</a>
+              <Button type='link' style={{padding:0, color:'#f5222d'}}>删除</Button>
             </Popconfirm>
           </span>
         )
@@ -151,7 +158,10 @@ class Order extends Component {
     this.setState({
       modal:modalState
     });
-    this.props.onShowModal(curOrder);
+    //清空顶层order的条件 1.编辑取消后新建时 2.编辑不同订单时
+    if(this.props.order._id !== curOrder._id){
+      this.props.onShowModal(curOrder);
+    }
   }
   handleModalOk = (type='order') => {
     const modalState={...this.state.modal};
@@ -187,6 +197,7 @@ class Order extends Component {
     switch(type){
       case 'order':
         this.handleTableChange({},{},{})
+        this.props.onProcessOver();
       break;
       case 'stockInout':
 
@@ -212,17 +223,27 @@ class Order extends Component {
               <Col span={2}>
                 <Button type="primary" onClick={()=>this.showModal()}>新增</Button>
               </Col>
-              <Col span={6} offset={16}>
-                <Search 
-                  placeholder="产品名" 
-                  onChange={event=>this.setState({remoteFilter:{product_name:event.target.value}})} 
-                  onSearch={()=>this.handleTableChange({},{},{})} 
-                />
+              <Col span={22}>
+                <Form layout='inline' style={{textAlign:'right'}}>
+                  <FormItem>
+                  <Search 
+                    placeholder="产品名" 
+                    onChange={event=>this.setState({remoteFilter:{product_name:event.target.value}})} 
+                    onSearch={()=>this.handleTableChange({},{},{})} 
+                  /></FormItem>
+                  <FormItem>
+                  <Search 
+                    placeholder="包含材料" 
+                    onChange={event=>this.setState({remoteFilter:{item_name:event.target.value}})} 
+                    onSearch={()=>this.handleTableChange({},{},{})} 
+                  /></FormItem>
+                  </Form>
               </Col>
             </Row>
-            <Table dataSource={this.state.data} pagination={this.state.pagination} loading={this.state.loading} onChange={this.handleTableChange} columns={this.columns} rowKey='_id' />
+            <Table dataSource={this.state.data} pagination={this.state.pagination} loading={this.state.loading} onChange={this.handleTableChange} columns={this.columns} rowKey='_id' size='small' />
             <Modal
-              title={(this.props.order.product_name.value?'编辑':'新增')+"订单"}
+              title={(this.props.order._id?'编辑':'新增')+'订单'}
+              width="1100px"
               okText="确定"
               cancelText="取消"
               visible={this.state.modal.order.modalVisible}
@@ -238,6 +259,7 @@ class Order extends Component {
             </Modal>
             <Modal
               title={"出入库"}
+              width="1100px"
               okText="确定"
               cancelText="取消"
               visible={this.state.modal.stockInout.modalVisible}
@@ -266,7 +288,8 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     onShowModal: (order) => {
-      if(order.product_name){
+      if(order._id){
+        //编辑
         const o={...order};
         for(let key in o){
           if(/_id|index/.test(key)===false){
@@ -275,8 +298,13 @@ const mapDispatchToProps = (dispatch) => {
         }
         dispatch({type:'UPDATE_ORDER', order:o})
       }else{
+        //新建
         dispatch({type:'INIT_ORDER'});
       }
+    },
+    onProcessOver: ()=>{
+      //编辑完成后清空数据
+      dispatch({type:'INIT_ORDER'});
     }
   }
 }
