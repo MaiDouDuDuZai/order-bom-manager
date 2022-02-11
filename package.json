@@ -9,7 +9,7 @@
   "homepage": ".",
   "DEV": true,
   "dependencies": {
-    "ajv": "^6.10.2",
+    "ajv": "^6.12.3",
     "antd": "^3.21.4",
     "baidu-aip-sdk": "^2.3.9",
     "electron-log": "^3.0.7",
